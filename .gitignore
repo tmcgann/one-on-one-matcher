@@ -105,3 +105,6 @@ dist
 
 # Ignore persisted data files
 src/data/
+
+# VS Code Workspace files
+*.code-workspace

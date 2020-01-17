@@ -1,3 +1,5 @@
+const argv = require('yargs').argv
+
 const { saveMatches } = require('./repositories/matchRepository')
 const { getPersons, savePersons } = require('./repositories/personRepository')
 const { objectify } = require('./utils/array')
@@ -5,7 +7,24 @@ const { makeMatches } = require('./utils/match')
 const { getId, getOldestMatch, updatePersonsQueues } = require('./utils/person')
 const { printResults } = require('./utils/printer')
 
-function run() {
+function makeOptions(args) {
+  const exclusions = Array.isArray(args.exclusions)
+    ? args.exclusions
+    : Array.isArray(args.exclusion)
+    ? args.exclusion
+    : typeof args.exclusions === 'string'
+    ? args.exclusions.split(',').map(exclusion => exclusion.trim())
+    : typeof args.exclusion === 'string'
+    ? args.exclusion.split(',').map(exclusion => exclusion.trim())
+    : []
+
+  return {
+    exclusionsSet: new Set(exclusions.map(name => name.toLowerCase())),
+    skipSave: args.dryRun || args.skipSave || false,
+  }
+}
+
+function run(options = {}) {
   // Set up matches
   const matches = []
   const personsMatchedSet = new Set()
@@ -20,7 +39,11 @@ function run() {
 
   // Make some matches
   let iteration = 1
-  let personsToMatch = personsSorted.filter(person => !personsMatchedSet.has(getId(person)))
+  let personsToMatch = personsSorted.filter(person => {
+    const personIsNotAlreadyMatched = !personsMatchedSet.has(getId(person))
+    const personIsNotExcluded = !options.exclusionsSet.has(getId(person).toLowerCase())
+    return personIsNotAlreadyMatched && personIsNotExcluded
+  })
   while (
     iteration < persons.length && // To prevent infinite iteration in the event of a bug, cap how many times we iterate
     personsMatchedSet.size !== persons.length &&
@@ -47,9 +70,12 @@ function run() {
 
   printResults(matches, Array.from(personsMatchedSet), personsToMatch)
 
-  const updatedPersons = updatePersonsQueues(personsSorted, matches)
-  savePersons(updatedPersons)
-  saveMatches(matches)
+  if (!options.skipSave) {
+    const updatedPersons = updatePersonsQueues(personsSorted, matches)
+    savePersons(updatedPersons)
+    saveMatches(matches)
+  }
 }
 
-run()
+console.log(`Options:`, makeOptions(argv), `\n`)
+run(makeOptions(argv))

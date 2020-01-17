@@ -8,5 +8,8 @@
     "test": "jest"
   },
   "author": "Taylor McGann",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "yargs": "15.1.0"
+  }
 }
