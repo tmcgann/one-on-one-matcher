@@ -27,7 +27,7 @@ function makeMatches(allPersonsDict, personsAlreadyMatchedSet, personsToMatch) {
       return
     }
 
-    // IF this person does NOT have any kind of unmatched match THEN return
+    // IF this person does NOT have any kind of unmatched match (i.e. there are no possible matches) THEN return
     const oldestMatch = getOldestUnmatchedMatch(personsAlreadyMatchedSet, person)
     if (!oldestMatch || newPersonsMatchedSet.has(oldestMatch)) {
       return

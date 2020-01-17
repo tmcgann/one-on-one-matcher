@@ -1,4 +1,4 @@
-const { loadData, writeData } = require('./db')
+const { loadData, writeData } = require('../db')
 
 const DATA_PATH = './src/data/matches.json'
 
@@ -8,7 +8,8 @@ function getMatches() {
 
 function saveMatches(matches) {
   const existingMatches = getMatches()
-  const combinedMatches = existingMatches.concat({
+  const combinedMatches = existingMatches.slice()
+  combinedMatches.unshift({
     createdAt: new Date().toISOString(),
     matches,
   })

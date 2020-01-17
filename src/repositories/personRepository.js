@@ -1,4 +1,4 @@
-const { loadData, writeData } = require('./db')
+const { loadData, writeData } = require('../db')
 
 const DATA_PATH = './src/data/persons.json'
 

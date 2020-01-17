@@ -1,8 +1,9 @@
-const { saveMatches } = require('./matchRepository')
-const { getPersons, savePersons } = require('./personRepository')
+const { saveMatches } = require('./repositories/matchRepository')
+const { getPersons, savePersons } = require('./repositories/personRepository')
 const { objectify } = require('./utils/array')
 const { makeMatches } = require('./utils/match')
 const { getId, getOldestMatch, updatePersonsQueues } = require('./utils/person')
+const { printResults } = require('./utils/printer')
 
 function run() {
   // Set up matches
@@ -21,7 +22,7 @@ function run() {
   let iteration = 1
   let personsToMatch = personsSorted.filter(person => !personsMatchedSet.has(getId(person)))
   while (
-    iteration < persons.length &&
+    iteration < persons.length && // To prevent infinite iteration in the event of a bug, cap how many times we iterate
     personsMatchedSet.size !== persons.length &&
     personsToMatch.length > 1
   ) {
@@ -35,6 +36,8 @@ function run() {
     iteration++
   }
 
+  // IF there are an odd number of people to match and someone is left out with no match
+  // THEN make a threesome and put that person with their oldest match
   if (personsToMatch.length === 1) {
     const person = personsToMatch.shift()
     const oldestMatch = getOldestMatch(person)
@@ -42,12 +45,7 @@ function run() {
     match.push(getId(person))
   }
 
-  console.log(`Matches (${matches.length}):`, matches)
-  console.log(`Matched Persons (${personsMatchedSet.size}):`, Array.from(personsMatchedSet))
-  console.log(
-    `Unmatched Persons (${personsToMatch.length}):`,
-    personsToMatch.map(p => p.firstName),
-  )
+  printResults(matches, Array.from(personsMatchedSet), personsToMatch)
 
   const updatedPersons = updatePersonsQueues(personsSorted, matches)
   savePersons(updatedPersons)
