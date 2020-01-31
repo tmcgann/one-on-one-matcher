@@ -16,11 +16,11 @@ function getOldestMatch(person, offset = 0) {
   return person.queue[index]
 }
 
-function getOldestUnmatchedMatch(personsMatchedSet, person) {
+function getOldestUnmatchedMatch(person, personBlacklistSet) {
   let offset = 0
   let oldestMatch = getOldestMatch(person, offset)
 
-  while (personsMatchedSet.has(oldestMatch)) {
+  while (personBlacklistSet.has(oldestMatch)) {
     oldestMatch = getOldestMatch(person, offset)
     offset++
   }
@@ -32,6 +32,15 @@ function getPersonWithShortestQueue(persons) {
   return persons.reduce((memo, person) => {
     return memo.queue.length >= person.queue.length ? memo : person
   }, persons[0])
+}
+
+function getPersonsToMatch(persons, personBlacklistSet) {
+  return persons.filter(person => {
+    // const personIsNotAlreadyMatched = !personsMatchedSet.has(getId(person))
+    // const personIsNotExcluded = !personsExcludedSet.has(getId(person))
+    // return personIsNotAlreadyMatched && personIsNotExcluded
+    return !personBlacklistSet.has(getId(person))
+  })
 }
 
 function updatePersonsQueues(persons, matches) {
@@ -69,5 +78,6 @@ module.exports = {
   getOldestMatch,
   getOldestUnmatchedMatch,
   getPersonWithShortestQueue,
+  getPersonsToMatch,
   updatePersonsQueues,
 }

@@ -4,22 +4,23 @@ const { saveMatches } = require('./repositories/matchRepository')
 const { getPersons, savePersons } = require('./repositories/personRepository')
 const { objectify } = require('./utils/array')
 const { makeMatches } = require('./utils/match')
-const { getId, getOldestMatch, updatePersonsQueues } = require('./utils/person')
+const {
+  getId,
+  getOldestUnmatchedMatch,
+  getPersonsToMatch,
+  updatePersonsQueues,
+} = require('./utils/person')
 const { printResults } = require('./utils/printer')
 
 function makeOptions(args) {
-  const exclusions = Array.isArray(args.exclusions)
-    ? args.exclusions
-    : Array.isArray(args.exclusion)
-    ? args.exclusion
-    : typeof args.exclusions === 'string'
-    ? args.exclusions.split(',').map(exclusion => exclusion.trim())
-    : typeof args.exclusion === 'string'
-    ? args.exclusion.split(',').map(exclusion => exclusion.trim())
+  const exclusions = Array.isArray(args.exclude)
+    ? args.exclude
+    : typeof args.exclude === 'string'
+    ? args.exclude.split(',').map(exclusion => exclusion.trim())
     : []
 
   return {
-    exclusionsSet: new Set(exclusions.map(name => name.toLowerCase())),
+    exclusions,
     skipSave: args.dryRun || args.skipSave || false,
   }
 }
@@ -28,6 +29,7 @@ function run(options = {}) {
   // Set up matches
   const matches = []
   const personsMatchedSet = new Set()
+  const personsExcludedSet = new Set(options.exclusions)
 
   // Get person data
   const persons = getPersons()
@@ -39,23 +41,31 @@ function run(options = {}) {
 
   // Make some matches
   let iteration = 1
-  let personsToMatch = personsSorted.filter(person => {
-    const personIsNotAlreadyMatched = !personsMatchedSet.has(getId(person))
-    const personIsNotExcluded = !options.exclusionsSet.has(getId(person).toLowerCase())
-    return personIsNotAlreadyMatched && personIsNotExcluded
-  })
+  let personsToMatch = getPersonsToMatch(
+    personsSorted,
+    new Set([...personsMatchedSet, ...personsExcludedSet]),
+  )
+
   while (
     iteration < persons.length && // To prevent infinite iteration in the event of a bug, cap how many times we iterate
     personsMatchedSet.size !== persons.length &&
     personsToMatch.length > 1
   ) {
     console.log(`Iteration ${iteration}: ${personsToMatch.map(p => getId(p))}`)
-    const matchData = makeMatches(personDict, personsMatchedSet, personsToMatch)
+    const matchData = makeMatches(
+      personDict,
+      new Set([...personsMatchedSet, ...personsExcludedSet]),
+      personsToMatch,
+    )
 
     matches.push(...matchData.matches)
     matchData.personsMatched.forEach(p => personsMatchedSet.add(p))
 
-    personsToMatch = personsSorted.filter(person => !personsMatchedSet.has(getId(person)))
+    // personsToMatch = personsSorted.filter(person => !personsMatchedSet.has(getId(person)))
+    personsToMatch = getPersonsToMatch(
+      personsSorted,
+      new Set([...personsMatchedSet, ...personsExcludedSet]),
+    )
     iteration++
   }
 
@@ -63,15 +73,21 @@ function run(options = {}) {
   // THEN make a threesome and put that person with their oldest match
   if (personsToMatch.length === 1) {
     const person = personsToMatch.shift()
-    const oldestMatch = getOldestMatch(person)
+    const oldestMatch = getOldestUnmatchedMatch(person, personsExcludedSet)
     const match = matches.find(match => match.includes(oldestMatch))
     match.push(getId(person))
   }
 
-  printResults(matches, Array.from(personsMatchedSet), personsToMatch)
+  const updatedPersons = updatePersonsQueues(personsSorted, matches)
+  printResults(
+    matches,
+    Array.from(personsMatchedSet),
+    Array.from(personsExcludedSet),
+    personsToMatch,
+    updatedPersons,
+  )
 
   if (!options.skipSave) {
-    const updatedPersons = updatePersonsQueues(personsSorted, matches)
     savePersons(updatedPersons)
     saveMatches(matches)
   }

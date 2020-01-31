@@ -32,13 +32,13 @@ npm start
 Options:
 
 - `--dry-run | --skip-save` — Skips the save portion of the script and just produces output
-- `--exclusions <comma-delimited-persons> | --exclusion <person>` — Specify persons to exclude from the sort. The `--exclusion` flag can be specified multiple times to achieve the same functionality as `--exclusions`.
+- `--exclude <comma-delimited-persons>` — Specify persons to exclude from the sort. To specify multiple persons either delimit persons by comma or use the flag more than once.
 
 Examples:
 
 ```bash
-npm start -- --dry-run --exclusions taylor,jake,tyler
-npm start -- --exclusion taylor --exclusion jake
+npm start -- --dry-run --exclude taylor,jake,tyler
+npm start -- --exclude taylor --exclude jake
 ```
 
 ## Future Improvements
