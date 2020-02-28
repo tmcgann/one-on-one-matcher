@@ -80,10 +80,11 @@ function run(options = {}) {
 
   const updatedPersons = updatePersonsQueues(personsSorted, matches)
   printResults(
-    matches,
     Array.from(personsMatchedSet),
     Array.from(personsExcludedSet),
     personsToMatch,
+    matches,
+    persons,
     updatedPersons,
   )
 
