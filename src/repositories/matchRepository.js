@@ -6,17 +6,18 @@ function getMatches() {
   return loadData(DATA_PATH)
 }
 
-function saveMatches(matches) {
+function updateMatches(matches, exclusions) {
   const existingMatches = getMatches()
   const combinedMatches = existingMatches.slice()
   combinedMatches.unshift({
     createdAt: new Date().toISOString(),
     matches,
+    exclusions: exclusions,
   })
   writeData(DATA_PATH, combinedMatches)
 }
 
 module.exports = {
   getMatches,
-  saveMatches,
+  updateMatches,
 }

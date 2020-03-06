@@ -1,7 +1,7 @@
 const argv = require('yargs').argv
 
-const { saveMatches } = require('./repositories/matchRepository')
-const { getPersons, savePersons } = require('./repositories/personRepository')
+const { updateMatches } = require('./repositories/matchRepository')
+const { getPersons, updatePersons } = require('./repositories/personRepository')
 const { objectify } = require('./utils/array')
 const { makeMatches } = require('./utils/match')
 const {
@@ -89,8 +89,11 @@ function run(options = {}) {
   )
 
   if (!options.skipSave) {
-    savePersons(updatedPersons)
-    saveMatches(matches)
+    const exclusionsSorted = options.exclusions.slice()
+    exclusionsSorted.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0))
+
+    updatePersons(updatedPersons)
+    updateMatches(matches, exclusionsSorted)
   }
 }
 

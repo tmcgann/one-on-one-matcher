@@ -1,4 +1,5 @@
 const { loadData, writeData } = require('../db')
+const { getId, sortByFirstName } = require('../utils/person')
 
 const DATA_PATH = './src/data/persons.json'
 
@@ -15,12 +16,17 @@ function getPersons() {
   return loadData(DATA_PATH)
 }
 
-function savePersons(persons) {
-  writeData(DATA_PATH, persons)
+function updatePersons(personsChanged) {
+  const personsChangedIdSet = new Set(personsChanged.map(person => getId(person)))
+  const existingPersons = getPersons()
+  const personsUnchanged = existingPersons.filter(person => !personsChangedIdSet.has(getId(person)))
+  const combinedPersons = [...personsChanged, ...personsUnchanged]
+  combinedPersons.sort(sortByFirstName)
+  writeData(DATA_PATH, combinedPersons)
 }
 
 module.exports = {
   createPerson,
   getPersons,
-  savePersons,
+  updatePersons,
 }

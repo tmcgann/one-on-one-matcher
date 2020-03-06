@@ -43,6 +43,10 @@ function getPersonsToMatch(persons, personBlacklistSet) {
   })
 }
 
+function sortByFirstName(a, b) {
+  return a.firstName > b.firstName ? 1 : a.firstName < b.firstName ? -1 : 0
+}
+
 function updatePersonsQueues(persons, matches) {
   const personsDict = objectify(persons, getId)
   return matches.reduce((memo, match) => {
@@ -79,5 +83,6 @@ module.exports = {
   getOldestUnmatchedMatch,
   getPersonWithShortestQueue,
   getPersonsToMatch,
+  sortByFirstName,
   updatePersonsQueues,
 }
