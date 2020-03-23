@@ -1,9 +1,17 @@
 const { objectify } = require('./array')
 
-function computeUpdatedQueue(queue, otherPersonIds) {
-  const otherPersonIdsNormalized = otherPersonIds.filter(personId => personId != null)
-  const newQueue = queue.filter(personId => !otherPersonIdsNormalized.includes(personId))
-  newQueue.unshift(...otherPersonIdsNormalized)
+function computeUpdatedQueue(person, recentlyMatchedPersonIds) {
+  // Remove null or undefined entries; also remove self
+  const recentlyMatchedPersonIdsNormalized = recentlyMatchedPersonIds.filter(
+    personId => personId != null && personId !== getId(person),
+  )
+  // Reduce the existing queue to those persons with which the person did not recently match with.
+  const newQueue = person.queue.filter(
+    personId => !recentlyMatchedPersonIdsNormalized.includes(personId),
+  )
+  // Add the new matches to the front of the queue (doesn't make sense in queue terms, should probably reverse everything to put them at the back of the queue, but is what it is for now.)
+  newQueue.unshift(...recentlyMatchedPersonIdsNormalized)
+
   return newQueue
 }
 
@@ -56,11 +64,11 @@ function updatePersonsQueues(persons, matches) {
     const personB = personsDict[personIdB]
     const newPersonA = {
       ...personA,
-      queue: computeUpdatedQueue(personA.queue, [personIdB, personIdC]),
+      queue: computeUpdatedQueue(personA, [personIdB, personIdC]),
     }
     const newPersonB = {
       ...personB,
-      queue: computeUpdatedQueue(personB.queue, [personIdC, personIdA]),
+      queue: computeUpdatedQueue(personB, [personIdC, personIdA]),
     }
     memo.push(newPersonA, newPersonB)
 
@@ -68,7 +76,7 @@ function updatePersonsQueues(persons, matches) {
       const personC = personsDict[personIdC]
       const newPersonC = {
         ...personC,
-        queue: computeUpdatedQueue(personB.queue, [personIdA, personIdB]),
+        queue: computeUpdatedQueue(personC, [personIdA, personIdB]),
       }
       memo.push(newPersonC)
     }
