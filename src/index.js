@@ -1,7 +1,7 @@
 const argv = require('yargs').argv
 
 const { updateMatches } = require('./repositories/matchRepository')
-const { getPersons, updatePersons } = require('./repositories/personRepository')
+const { getActivePersons, updatePersons } = require('./repositories/personRepository')
 const { objectify } = require('./utils/array')
 const { makeMatches } = require('./utils/match')
 const {
@@ -32,7 +32,7 @@ function run(options = {}) {
   const personsExcludedSet = new Set(options.exclusions)
 
   // Get person data
-  const persons = getPersons()
+  const persons = getActivePersons()
   const personDict = objectify(persons, getId)
 
   // Order persons by longest queue descending

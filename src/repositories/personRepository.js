@@ -10,7 +10,32 @@ function createPerson(firstName, lastName, email) {
     lastName,
     email,
     queue: [],
+    disabled: false,
   }
+}
+
+/**
+ * NOT SURE IF THIS WORKS. HAVE NOT TESTED. Deactivate a person and remove them from all other persons' queues.
+ *
+ * @param {string} email
+ */
+function deactivatePersonByEmail(email) {
+  const persons = getPersons()
+
+  // Deactivate person (mutating person. yuck!)
+  const deactivatedPerson = persons.find(person => person.email === email)
+  deactivatedPerson.disabled = true
+
+  // Remove deactivated person from all other persons' queues (mutating person. yuck!)
+  persons.forEach(person => {
+    person.queue = person.queue.filter(firstName => firstName !== deactivatedPerson.firstName)
+  })
+
+  updatePersons(persons)
+}
+
+function getActivePersons() {
+  return getPersons().filter(person => !person.disabled)
 }
 
 function getPersons() {
@@ -31,6 +56,7 @@ function updatePersons(personsChanged) {
 
 module.exports = {
   createPerson,
-  getPersons,
+  deactivatePersonByEmail,
+  getActivePersons,
   updatePersons,
 }
