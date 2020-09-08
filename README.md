@@ -47,3 +47,4 @@ npm start -- --exclude taylor --exclude jake
 - [ ] Improve the matching algorithm by adding a scoring factor such that the matcher attempts to optimize matches for each person and the highest scored set of matches wins. As of now it optimizes the person who has met with the most people, which may not ultimately the best (i.e. least recent) set of overall matches.
 - [ ] Use a true CLI scripting library instead of just args. Would make it easier to print command help at runtime or use as a standalone binary.
 - [ ] Add a web UI
+- [ ] Allow for 1:1:1 or any configurable of match size per run
